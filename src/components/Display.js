@@ -1,17 +1,17 @@
 import React from 'react';
 
-const Display = () => {
+const Display = (props) => {
   return (
     <div
       style={{
         display: 'flex',
-        width: '38vw',
+        width: '40vw',
         height: '3rem',
         border: '1pt solid black',
-        flexBasis: 'flexend',
+        justifyContent: 'flex-end',
       }}
     >
-      Hello
+      {props.total}
     </div>
   );
 };

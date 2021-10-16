@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 const Button = (props) => {
   const btnOptions = (btnPressed) => {
@@ -47,12 +47,13 @@ const Button = (props) => {
     <button
       style={{
         height: '2rem',
-        width: props.width === undefined ? '10rem' : props.width,
+        width: props.width === undefined ? '25%' : props.width,
       }}
       className={props.className}
-      onClick={() => btnOptions(props.display)}
+      onClick={props.onClick}
+      ref={props.name}
     >
-      {props.display}
+      {props.value}
     </button>
   );
 };
