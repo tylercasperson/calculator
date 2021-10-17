@@ -5,14 +5,38 @@ import Button from './Button';
 
 const CalculatorBody = () => {
   const [equation, setEquation] = useState([]);
+  const [workspace, setWorkspace] = useState([]);
   const [total, setTotal] = useState('');
   const [firstSet, setFirstSet] = useState([]);
   const [secondSet, setSecondSet] = useState([]);
   const [symbolArr, setSymbolArr] = useState([]);
 
   const resetAll = () => {
-    setTotal(0);
+    setTotal('');
     setEquation([]);
+    setFirstSet([]);
+    setSecondSet([]);
+    setSymbolArr([]);
+  };
+
+  const multipleDigits = () => {
+    const concatinateNumbers = () => {
+      for (let i = 0; i < equation.length; i++) {
+        if (!isNaN(equation[i])) {
+          if (!isNaN(equation[i + 1])) {
+            workspace.push(equation[i].toString() + equation[i + 1].toString());
+            i++;
+          } else {
+            workspace.push(equation[i].toString());
+          }
+        } else {
+          workspace.push(equation[i].toString());
+        }
+      }
+      setEquation(workspace);
+      setWorkspace([]);
+    };
+    concatinateNumbers();
   };
 
   const numberSetup = (number) => {
@@ -22,7 +46,14 @@ const CalculatorBody = () => {
       secondSet.push(number);
     }
     equation.push(number);
-    setTotal(number);
+
+    if (secondSet.length === 0) {
+      setTotal(firstSet.join(''));
+    } else {
+      setTotal(secondSet.join(''));
+    }
+
+    multipleDigits();
   };
 
   const symbolsUsed = (symbol) => {
@@ -39,9 +70,33 @@ const CalculatorBody = () => {
     setTotal(symbol);
   };
 
+  const percentage = () => {
+    if (secondSet.length === 0) {
+      let firstPercentage = Number(firstSet.join('') / 100);
+      setFirstSet([firstPercentage]);
+      setTotal(firstPercentage);
+      equation[0] = firstPercentage;
+    } else {
+      let secondPercentage = Number(secondSet.join('') / 100);
+      setSecondSet([secondPercentage]);
+      setTotal(secondPercentage);
+      equation[2] = secondPercentage;
+    }
+  };
+
+  const positiveNegative = () => {
+    let changedNumber = Number(total * -1);
+
+    if (secondSet.length === 0) {
+      setFirstSet([changedNumber]);
+    } else {
+      setSecondSet([changedNumber]);
+    }
+    setTotal(changedNumber);
+  };
+
   const calculation = (input) => {
     const signs = (sign, firstSet, secondSet) => {
-      console.log(sign);
       switch (sign) {
         case '+':
           return Number(firstSet) + Number(secondSet);
@@ -60,6 +115,10 @@ const CalculatorBody = () => {
       setTotal(
         signs(symbolArr.join(''), firstSet.join(''), secondSet.join(''))
       );
+      setFirstSet([
+        signs(symbolArr.join(''), firstSet.join(''), secondSet.join('')),
+      ]);
+      setSecondSet([]);
     }
 
     equation.push(input);
@@ -73,8 +132,8 @@ const CalculatorBody = () => {
       />
       <div style={{ width: '30rem' }}>
         <Button value={'AC'} onClick={() => resetAll()} />
-        <Button value={'+/-'} />
-        <Button value={'%'} />
+        <Button value={'+/-'} onClick={() => positiveNegative()} />
+        <Button value={'%'} onClick={() => percentage()} />
         <Button value={'/'} onClick={() => symbolsUsed('/')} />
 
         <Button value={7} onClick={() => numberSetup(7)} />
