@@ -1,3 +1,4 @@
+import './App.css';
 import CalculatorBody from './components/CalculatorBody';
 
 function App() {

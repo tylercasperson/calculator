@@ -17,7 +17,7 @@ const Display = (props) => {
         style={{
           display: 'flex',
           padding: '0 3px 3px 0px',
-          width: '40vw',
+          width: '80vw',
           height: '1rem',
           justifyContent: 'flex-end',
         }}
