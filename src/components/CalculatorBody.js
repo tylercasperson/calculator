@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 
 import Display from './Display';
 import Button from './Button';
+import ExponentBtn from './ExponentBtn.js';
+import RadicalBtn from './RadicalBtn';
+import FractionBtn from './FractionBtn';
 
 const CalculatorBody = () => {
   const [equation, setEquation] = useState([]);
@@ -25,32 +28,71 @@ const CalculatorBody = () => {
     console.log('multipleDigits');
     const concatinateNumbers = () => {
       console.log('concatinateNumbers');
+      let numbersArr = [];
+      let notNumbersArr = [];
       for (let i = 0; i < equation.length; i++) {
-        if (!isNaN(equation[i])) {
+        if (isNaN(equation[i])) {
+          notNumbersArr.push(equation[i]);
           if (!isNaN(equation[i + 1])) {
-            workspace.push(equation[i].toString() + equation[i + 1].toString());
-            i++;
-          } else {
-            workspace.push(equation[i].toString());
+            workspace.push(notNumbersArr.join(''));
+            notNumbersArr = [];
           }
         } else {
-          workspace.push(equation[i].toString());
+          numbersArr.push(equation[i]);
+          if (isNaN(equation[i + 1])) {
+            workspace.push(numbersArr.join(''));
+            numbersArr = [];
+          }
         }
+        // if (!isNaN(equation[i])) {
+        //   console.log(1);
+        //   if (!isNaN(equation[i + 1])) {
+        //     console.log(2);
+        //     workspace.push(equation[i].toString() + equation[i + 1].toString());
+        //     i++;
+        //   } else {
+        //     console.log(3);
+        //     workspace.push(equation[i].toString());
+        //   }
+        // } else {
+        //   console.log(4);
+        //   if (symbolArr[symbolArr.length - 1] !== 'radical') {
+        //     console.log(5);
+        //     console.log(workspace);
+        //     console.log(equation);
+        //     console.log(symbolArr);
+        //     workspace.push(equation[i].toString());
+        //   }
+        // }
       }
-      setEquation(workspace);
+
+      if (symbolArr[symbolArr.length - 1] === 'radical') {
+        radicals();
+      } else if (symbolArr[symbolArr.length - 1] === 'exponents') {
+        console.log('here', exponents(firstSet, secondSet));
+      } else {
+        setEquation(workspace);
+      }
       setWorkspace([]);
     };
+
     concatinateNumbers();
   };
 
   const numberSetup = (number) => {
     console.log('numberSetup');
+
+    // if (symbolArr[symbolArr.length - 1] === 'radical') {
+    //   secondSet.push(number);
+    //   radicals('radical');
+    // } else {
     if (symbolArr.length === 0) {
       firstSet.push(number);
     } else {
       secondSet.push(number);
     }
     equation.push(number);
+    // }
 
     if (secondSet.length === 0) {
       setTotal(firstSet.join(''));
@@ -63,16 +105,34 @@ const CalculatorBody = () => {
 
   const symbolsUsed = (symbol) => {
     console.log('symbolUsed');
-    if (equation.indexOf('=') === equation.length - 1) {
-      setEquation([total, symbol]);
-      setFirstSet([total]);
-      setSecondSet([]);
+
+    if (equation.length === 0) {
+      setFirstSet([symbol]);
+      setEquation([symbol]);
       setSymbolArr([symbol]);
     } else {
-      symbolArr.push(symbol);
-      equation.push(symbol);
+      if (equation[equation.length - 1].key === '1') {
+        setEquation([
+          Math.sqrt(
+            equation[equation.length - 1].props.children[1].props.children[1]
+          ),
+          symbol,
+        ]);
+      }
+      if (equation.indexOf('=') === equation.length - 1) {
+        setEquation([total, symbol]);
+        setFirstSet([total]);
+        setSecondSet([]);
+        setSymbolArr([symbol]);
+      } else {
+        if (symbol === 'sqrt') {
+          symbolArr.push(symbol);
+        } else {
+          symbolArr.push(symbol);
+          equation.push(symbol);
+        }
+      }
     }
-
     setTotal(symbol);
   };
 
@@ -104,6 +164,7 @@ const CalculatorBody = () => {
   };
 
   const memoryFunction = (option) => {
+    console.log('memoryFunction');
     switch (option) {
       case 'mr':
         return setTotal(memory);
@@ -113,6 +174,144 @@ const CalculatorBody = () => {
         return setMemory(memory - Number(total));
       case 'mc':
         return setMemory(0);
+      default:
+        return;
+    }
+  };
+
+  const radicals = (option) => {
+    console.log('radicals');
+
+    if (option === 'sqrt') {
+      let squareRoot = (
+        <span key={1} style={{ whiteSpace: 'nowrap', fontSize: 'larger' }}>
+          &radic;
+          <span>&nbsp;{total}</span>
+        </span>
+      );
+
+      symbolsUsed('sqrt');
+      equation.pop();
+      equation.push(squareRoot);
+      calculation('sqrt');
+    } else {
+      let y = secondSet.length === 0 ? 'y' : secondSet.join('');
+      let radical = (
+        <div key={2}>
+          <sup>{y}</sup>
+          <span style={{ whiteSpace: 'nowrap', fontSize: 'larger' }}>
+            &radic;
+            <span>&nbsp;{firstSet.join('')}</span>
+          </span>
+        </div>
+      );
+
+      if (secondSet.length === 0) {
+        symbolsUsed('radical');
+        equation.shift();
+        equation.pop();
+        equation.push(radical);
+      }
+
+      setTotal(radical);
+      setEquation([radical]);
+
+      //   calculation('radical');
+      console.log('y: ', y);
+      console.log('e: ', equation);
+      console.log('1: ', firstSet);
+      console.log('2: ', secondSet);
+      console.log('t: ', total);
+      console.log('s: ', symbolArr);
+    }
+  };
+
+  const exponents = (number, exponent, type) => {
+    symbolArr.push('exponents');
+    if (type === 'squared') {
+      let calculatedTotal = Math.pow(number, exponent);
+      setTotal(calculatedTotal);
+      setEquation([
+        number,
+        <sup key={2}>
+          <sup>{exponent}</sup>
+        </sup>,
+      ]);
+
+      setFirstSet([calculatedTotal]);
+    } else if (type === 'yx') {
+      let y =
+        secondSet.length === 0
+          ? type === 'other'
+            ? 'x'
+            : 'y'
+          : secondSet.join('');
+      setFirstSet([exponent]);
+      console.log('number:', exponent);
+      setEquation([
+        <div key={3}>
+          {y}
+          <sup key={2}>{exponent}</sup>
+        </div>,
+      ]);
+    } else {
+      let y =
+        secondSet.length === 0
+          ? type === 'other'
+            ? 'x'
+            : 'y'
+          : secondSet.join('');
+      setFirstSet([number]);
+      setEquation([
+        <div key={'exponent'}>
+          {number}
+          <sup>{y}</sup>
+        </div>,
+      ]);
+    }
+  };
+
+  const factorial = (number) => {
+    let answer = 1;
+
+    for (let i = number; i > 0; i--) {
+      answer = i * answer;
+    }
+    setTotal(answer);
+    equation.push('!=');
+  };
+
+  const fraction = (type) => {
+    let x = firstSet.length === 0 ? 'x' : firstSet[0];
+    if (type === '1/x') {
+      equation.push('1/' + x);
+    }
+    setTotal(1 / firstSet.join(''));
+    setEquation(['1/', firstSet.join(''), '=']);
+  };
+
+  const fixedNumbers = (sign) => {
+    switch (sign) {
+      case 'random':
+        return console.log(Math.random());
+      case 'pi':
+        return console.log(Math.PI);
+      case 'e':
+        return console.log(Math.E);
+      case 'EE':
+        workspace.push(total);
+        for (let i = 0; i < total; i++) {
+          equation.push(0);
+          workspace.push(0);
+        }
+        setTotal(workspace);
+        if (firstSet[0] === Number(total)) {
+          firstSet[0] = Number(workspace.join(''));
+        } else if (secondSet[0] === Number(total)) {
+          setSecondSet([Number(workspace.join(''))]);
+        }
+        setWorkspace([]);
+        break;
       default:
         return;
     }
@@ -132,36 +331,47 @@ const CalculatorBody = () => {
         case '/':
           return Number(firstSet) / Number(secondSet);
         case '^':
+        case 'exponents':
           return Math.pow(Number(firstSet), Number(secondSet));
         case 'sqrt':
           return Math.sqrt(Number(firstSet));
+        case 'radical':
+          return Math.pow(Number(firstSet), 1 / Number(secondSet));
         default:
           return 'number';
       }
     };
 
     if (equation.indexOf('=') === -1) {
-      setTotal(
-        signs(symbolArr.join(''), firstSet.join(''), secondSet.join(''))
+      let calculatedTotal = signs(
+        symbolArr[0],
+        firstSet.join(''),
+        secondSet.join('')
       );
-      setFirstSet([
-        signs(symbolArr.join(''), firstSet.join(''), secondSet.join('')),
-      ]);
+      setTotal(calculatedTotal);
+      setFirstSet([calculatedTotal]);
       setSymbolArr([]);
       setSecondSet([]);
     }
 
-    equation.push(input);
+    if (input !== 'sqrt' || input !== 'radical') {
+      equation.push(input);
+    }
   };
 
   useEffect(() => {
     if (equation.includes('=')) {
-      if (secondSet.length === 0) {
+      if (secondSet.length === 0 && symbolArr.length !== 0) {
         setEquation([total]);
         setSymbolArr([]);
       }
     }
-  }, [equation, firstSet, secondSet, total]);
+    console.log('e: ', equation);
+    console.log('1: ', firstSet);
+    console.log('2: ', secondSet);
+    console.log('t: ', total);
+    console.log('s: ', symbolArr);
+  }, [equation, firstSet, secondSet, total, symbolArr, workspace]);
 
   return (
     <div
@@ -173,7 +383,8 @@ const CalculatorBody = () => {
     >
       <Display
         inputHistory={equation}
-        total={total.length === '' ? 0 : total}
+        currentWork={total}
+        // currentWork={total.length === '' ? 0 : total}
       />
 
       <div
@@ -196,118 +407,70 @@ const CalculatorBody = () => {
           <Button value={'m-'} onClick={() => memoryFunction('m-')} />
           <Button value={'mc'} onClick={() => memoryFunction('mc')} />
 
-          <Button
-            value={
-              <span style={{ whiteSpace: 'nowrap', fontSize: 'larger' }}>
-                &radic;
-                <span style={{ textDecoration: 'overline' }}>
-                  &nbsp;X&nbsp;
-                </span>
-              </span>
-            }
-            onClick={() => symbolsUsed('sqrt')}
+          <RadicalBtn number={'x'} onClick={() => radicals('sqrt')} />
+          <ExponentBtn
+            number={'x'}
+            exponent={'2'}
+            onClick={() => exponents(total, 2, 'squared')}
           />
-          <Button
-            value={
-              <div>
-                x<sup>2</sup>{' '}
-              </div>
-            }
-            onClick={() => symbolsUsed('^')}
-          />
-          <Button value={'('} />
-          <Button value={')'} />
+          <Button value={'('} onClick={() => symbolsUsed('(')} />
+          <Button value={')'} onClick={() => symbolsUsed(')')} />
 
-          <Button
-            value={
-              <span style={{ whiteSpace: 'nowrap', fontSize: 'larger' }}>
-                <sup>
-                  <sup
-                    style={{
-                      position: 'relative',
-                      left: '5%',
-                      fontSize: 'smaller',
-                    }}
-                  >
-                    y
-                  </sup>
-                </sup>
-                &radic;
-                <span style={{ textDecoration: 'overline' }}>
-                  &nbsp;X&nbsp;
-                </span>
-              </span>
-            }
-            onClick={() => symbolsUsed('sqrt')}
+          <RadicalBtn
+            number={'x'}
+            exponent={'y'}
+            onClick={() => radicals('radical')}
           />
-          <Button
-            value={
-              <div>
-                x<sup>y</sup>
-              </div>
+          <ExponentBtn
+            number={'x'}
+            exponent={'y'}
+            onClick={() =>
+              exponents(Number(firstSet.join('')), Number(secondSet.join('')))
             }
-            onClick={() => symbolsUsed('^')}
           />
-          <Button
-            value={
-              <div>
-                e<sup>x</sup>
-              </div>
+          <ExponentBtn
+            number={'e'}
+            exponent={'x'}
+            onClick={() =>
+              exponents(Number(Math.E), Number(firstSet.join('')), 'other')
             }
-            onClick={() => symbolsUsed('^')}
           />
-          <Button
-            value={
-              <div>
-                2<sup>x</sup>
-              </div>
-            }
-            onClick={() => symbolsUsed('^')}
+          <ExponentBtn
+            number={'2'}
+            exponent={'x'}
+            onClick={() => exponents(2, Number(firstSet.join('')), 'other')}
           />
 
-          <Button value={'x!'} onClick={() => symbolsUsed('sqrt')} />
-          <Button
-            value={
-              <div>
-                <sup>
-                  <sup>1</sup>
-                </sup>
-                <span
-                  style={{
-                    fontSize: 'x-large',
-                  }}
-                >
-                  /
-                </span>
-                <span style={{ fontSize: 'x-small' }}>x</span>
-              </div>
+          <Button value={'x!'} onClick={() => factorial(total)} />
+          <ExponentBtn
+            number={'y'}
+            exponent={'x'}
+            onClick={() =>
+              exponents(
+                Number(secondSet.join('')),
+                Number(firstSet.join('')),
+                'yx'
+              )
             }
-            onClick={() => symbolsUsed('^')}
           />
-          <Button
-            value={
-              <div>
-                y<sup>x</sup>
-              </div>
-            }
-            onClick={() => symbolsUsed('^')}
+          <FractionBtn
+            numerator={'1'}
+            denominator={'x'}
+            onClick={() => fraction('1/x')}
           />
-          <Button
-            value={
-              <div>
-                10<sup>x</sup>
-              </div>
-            }
-            onClick={() => symbolsUsed('^')}
+          <ExponentBtn
+            number={10}
+            exponent={'x'}
+            onClick={() => exponents(10, Number(firstSet.join('')), 'other')}
           />
 
-          <Button value={'Random'} onClick={() => symbolsUsed('sqrt')} />
+          <Button value={'Random'} onClick={() => fixedNumbers('random')} />
           <Button
             value={<span style={{ fontSize: 'large' }}>&#960;</span>}
-            onClick={() => symbolsUsed('^')}
+            onClick={() => fixedNumbers('pi')}
           />
-          <Button value={'e'} onClick={() => symbolsUsed('^')} />
-          <Button value={'EE'} onClick={() => symbolsUsed('^')} />
+          <Button value={'e'} onClick={() => fixedNumbers('e')} />
+          <Button value={'EE'} onClick={() => fixedNumbers('EE')} />
         </div>
 
         <div style={{ flex: '2', width: '40rem', flexGrow: '1' }}>

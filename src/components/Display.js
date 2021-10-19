@@ -7,8 +7,10 @@ const Display = (props) => {
         style={{
           display: 'flex',
           padding: '0 3px 1px 0px',
+          marginTop: '5px',
           height: '2rem',
           justifyContent: 'flex-end',
+          fontSize: 'smaller',
         }}
       >
         {props.inputHistory}
@@ -18,11 +20,11 @@ const Display = (props) => {
           display: 'flex',
           padding: '0 3px 3px 0px',
           width: '80vw',
-          height: '1rem',
+          height: '1.5rem',
           justifyContent: 'flex-end',
         }}
       >
-        {props.total}
+        {props.currentWork}
       </div>
     </div>
   );
